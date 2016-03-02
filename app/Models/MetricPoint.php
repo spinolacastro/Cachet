@@ -28,6 +28,7 @@ class MetricPoint extends Model implements HasPresenter
     protected $casts = [
         'metric_id' => 'int',
         'value'     => 'int',
+        'counter'   => 'int',
     ];
 
     /**
@@ -35,7 +36,14 @@ class MetricPoint extends Model implements HasPresenter
      *
      * @var string[]
      */
-    protected $fillable = ['metric_id', 'value', 'created_at'];
+    protected $fillable = ['metric_id', 'value', 'counter', 'created_at'];
+
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var string[]
+     */
+    protected $hidden = ['counter'];
 
     /**
      * The validation rules.
@@ -54,6 +62,20 @@ class MetricPoint extends Model implements HasPresenter
     public function metric()
     {
         return $this->belongsTo(Metric::class, 'id', 'metric_id');
+    }
+
+    /**
+     * Override the value attribute.
+     *
+     * @return float
+     */
+    public function getValueAttribute()
+    {
+        if ($this->metric->calc_type === Metric::CALC_SUM) {
+            return $this->value * $this->counter;
+        } elseif ($this->metric->calc_type === Metric::CALC_AVG) {
+            return $this->value * $this->counter;
+        }
     }
 
     /**
